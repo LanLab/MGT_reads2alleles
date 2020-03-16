@@ -342,7 +342,7 @@ def assem_filter(inp, args):
     :param args: input arguments argparse object from main()
     :return: True or (False + reasons for failure)
     """
-    print(inp)
+    # print(inp)
     inlis = inp.split("\n")
 
     inf1 = inlis[1].split(",")
@@ -542,7 +542,7 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
     start_time = time.time()
 
     # test_locus = "STM4037"
-    print("Parsing inputs\n")
+    print("\n[" + timestamp() + "] Starting Genome to Alleles\n")
     # script_path = sys.path[0]
 
     if args.refalleles:
@@ -585,16 +585,16 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
 
     locus_list = [x for x in locus_allowed_size.keys()]
 
-    print("Running BLAST\n")
+    print("[" + timestamp() + "] Running BLAST\n")
 
     # gets ref allele hits and blast hits against reference
     alleles_called_ref, ref_blast_hits, no_hits = ref_exact_blast(query_genome, ref_alleles_in, locus_allowed_size,
                                                                   tempdir,args)
 
-    print(no_hits)
+    # print(no_hits)
 
-    print("Exact matches found: {}\n".format(len(alleles_called_ref.keys())))
-    print("Processing partial BLAST hits\n")
+    # print("Exact matches found: {}\n".format(len(alleles_called_ref.keys())))
+    print("[" + timestamp() + "] Processing partial BLAST hits\n")
 
     partial_loci = list(locus_list)  # list of all loci
 
@@ -606,7 +606,7 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
     partial_hsps, uncallable, tophitlocus = get_partial_match_query_region(ref_blast_hits, partial_loci, qgenome,
                                                                            hsp_ident_thresh, seqs)
 
-    print("Reconstructing fragmented loci\n")
+    print("[" + timestamp() + "] Reconstructing fragmented loci\n")
 
     # Try to rebuild each locus that has partial hsps matching it
     # returns reconstructed loci (with Ns) where possible
@@ -614,17 +614,17 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
                                                            wordsize, tophitlocus, qgenome, hsp_ident_thresh, uncallable,
                                                            args)
 
-    print("Writing outputs\n")
+
+    print("[" + timestamp() + "] Writing outputs\n")
     write_outalleles(outfile, reconstructed, alleles_called_ref, uncallable, locus_list, mgt1st, no_hits, serotype)
 
     elapsed_time = time.time() - start_time
 
-    print("Allele calling completed in: ", elapsed_time)
+    print("\nAllele calling completed in: {0:.2f} seconds".format(elapsed_time))
 
-    now = datetime.datetime.now()
-    timestamp = now.strftime("%H:%M:%S")
 
-    print("[" + timestamp + "] MGT fastq to alleles pipeline complete for strain: " + strain_name)
+
+    print("\n[" + timestamp() + "] MGT fastq to alleles pipeline complete for strain: " + strain_name)
 
 
 def ref_exact_blast(query_genome, ref_fasta, allele_sizes, tempdir,args):
@@ -867,8 +867,8 @@ def mask_high_snp_regions(locus, recon_locus, ref_locus, window_size, snp_limit)
                 outlocus[pos] = "N"  # change to N
     outlocus = "".join(outlocus)
 
-    if outlocus.count("N") > (1 - float(0.8)) * len(ref_locus):
-        print(locus)
+    # if outlocus.count("N") > (1 - float(0.8)) * len(ref_locus):
+    #     print(locus)
 
     return outlocus
 
@@ -967,7 +967,7 @@ def generate_query_allele_seqs(partial_hsps, query_genome, missing_perc_cutoff, 
 
             calls[locus] = full_allele
 
-    print(hspcov)
+    # print(hspcov)
 
     for locus in calls:
         newseq = str(calls[locus])
@@ -990,7 +990,7 @@ def generate_query_allele_seqs(partial_hsps, query_genome, missing_perc_cutoff, 
 
         else:
             calls2[locus] = calls[locus]
-    print("missing:", missingperc)
+    # print("missing:", missingperc)
 
     return calls2, uncallable
 
@@ -1816,7 +1816,7 @@ def get_sizes_dict(inf):
     return outd
 
 
-def write_outalleles(outpath, reconstructed, ref, uncall, locuslist, mgt1st, no_hits, serotype):
+def write_outalleles(outpath, reconstructed, ref, uncall, locuslist, mgt1st, no_hits, serotype,args):
     outf = open(outpath, "w")
     outf.write(">{}:{}\n\n".format("species_serotype", serotype))
     outf.write(">{}:{}\n\n".format("7_gene_ST", mgt1st))
@@ -1855,17 +1855,37 @@ def write_outalleles(outpath, reconstructed, ref, uncall, locuslist, mgt1st, no_
             outf.write(">{}:0_{}\n\n".format(locus, "no_result"))
             print("MISSING: ", locus)
             absent += 1
-    print("called:", call)
+    print("Total Loci examined:\t{}".format(len(locuslist)))
+    print("Exact match to input alleles:\t{}".format(call))
     for i in new:
-        print("{}: {}".format(i, new[i]))
+        if i == "intact":
+            print("{}:\t{}".format("Intact loci with no exact match", new[i]))
+        elif i == "partial":
+            print("Loci with some (<{0:.1f}%) missing data:\t{1}".format((1-args.locusnlimit)*100, new[i]))
+    print("Loci unable to be called:\t{}\n".format(len(missing.keys())))
+    print("Reasons loci unable to be called")
     for i in missing:
-        print("{}: {}".format(i, missing[i]))
-    print("absent:", absent)
+        if i == "no_blast_hits":
+            print("No BLAST hits in genome:\t{}".format(missing[i]))
+        elif i == "unscorable_too_much_missing" or i == "failed_filter":
+            print("Too much missing(>{0:.1f}%):\t{1}".format((1-args.locusnlimit)*100,missing[i]))
+        elif i == "inconsistent_overlap":
+            print("Overlapping hits that do not match:\t{0}".format(missing[i]))
+        elif i == "possible_insertion" or i == "unscorable_too_long":
+            print("Loci with large insertion or which are too long (should not occur often):\t{0}".format(missing[i]))
+        elif i == "mixed_orientation":
+            print("Loci with mixed orientation on same contig:\t{0}".format(missing[i]))
+
+    # print("\nLoci missing due to error (should be 0):", absent)
     outf.close()
 
 
 ######## ARGUMENTS/HELP ########
 
+def timestamp():
+    now = datetime.datetime.now()
+    ts = now.strftime("%H:%M:%S")
+    return ts
 
 if __name__ == "__main__":
     main()
