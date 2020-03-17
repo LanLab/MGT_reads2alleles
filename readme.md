@@ -29,7 +29,7 @@ Install
 Before setting up the pipeline for processing raw data reads into alleles, firstly download a minikraken database (warning is 2.9GB).
 
 The MiniKraken DB can be accessed at https://ccb.jhu.edu/software/kraken/,
-	
+
 OR
 
 	wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171019_4GB.tgz
@@ -40,7 +40,7 @@ OR
 **3. Add database folder variable with:**
 
     export KRAKEN_DEFAULT_DB="/home/user/minikraken_db_folder"
-    
+
 
 **4. Install miniconda3:**
 
@@ -57,7 +57,7 @@ The "fq_to_allele.yml" has been provided to creating an environment named "fq_to
 
 **6. Users Permission**
 
-Lastly, the user permissions for the shovill_15cov file must be adjusted to allow execution 
+Lastly, the user permissions for the shovill_15cov file must be adjusted to allow execution
 
 	chmod 755 /path_to_MGT_read2alleles/shovill_cmd/bin/shovill_15cov
 
@@ -69,7 +69,7 @@ Run
 
     conda activate fq_to_allele
 
-**For usage** 
+**For usage**
 
     python /path/to/reads_to_alleles.py -h
 
@@ -83,6 +83,7 @@ Run
                            [--hspident HSPIDENT] [--locusnlimit LOCUSNLIMIT]
                            [--snpwindow SNPWINDOW] [--densitylim DENSITYLIM]
                            [--refsize REFSIZE] [--blastident BLASTIDENT]
+                           [--strainid STRAINID]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -97,6 +98,9 @@ Run
       -s SPECIES, --species SPECIES
                             String to find in kraken species confirmation test
                             (default: Salmonella enterica)
+      --strainid STRAINID
+                            Specify strain name instead of extracting from read file name
+                            (default: None)
       --no_serotyping NO_SEROTYPING
                             Do not run Serotyping of Salmonella using SISTR (ON by
                             default) (default: None)
@@ -143,13 +147,14 @@ Run
                             i.e. 5.0 or 2.9 (default: 5.0)
       --blastident BLASTIDENT
                             BLAST percentage identity needed for entire alignment to be returned (default: 90)
-
+      --strainid STRAINID   specify a strain name (overrides default extraction
+                            from read names) (default: False)
 
 
 Examples
 --------
 
-**example1:** 
+**example1:**
 
 running strain 1234 against salmonella typhimurium MGT with 8 cores and 30gb RAM
 
