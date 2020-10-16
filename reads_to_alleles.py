@@ -614,8 +614,15 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
     # Try to rebuild each locus that has partial hsps matching it
     # returns reconstructed loci (with Ns) where possible
     reconstructed, uncallable = generate_query_allele_seqs(partial_hsps, query_genome, missing_limit,
-                                                           wordsize, tophitlocus, qgenome, hsp_ident_thresh, uncallable,
-                                                           args)
+                                                           wordsize, tophitlocus, qgenome, hsp_ident_thresh, uncallable)
+
+    alleles_called_ref,newcalls = check_reconstructed_for_exact_matches(reconstructed,seqs,alleles_called_ref)
+
+    for i in newcalls:
+        partial_loci.remove(i)  # if locus has exact match to existing remove from list
+
+    exacthits = len(alleles_called_ref.keys())-exacthits
+    print("Reconstructed exact matches found: {}\n".format(exacthits))
 
     print("Writing outputs\n")
     write_outalleles(outfile, reconstructed, alleles_called_ref, uncallable, locus_list, mgt1st, no_hits, serotype,args)
@@ -626,7 +633,19 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
     print("\n[" + timestamp() + "] MGT fastq to alleles pipeline complete for strain: " + strain_name+"\n")
 
 
-def ref_exact_blast(query_genome, ref_fasta, allele_sizes, tempdir,args):
+def check_reconstructed_for_exact_matches(reconstructed,refseqs,alleles_called_ref):
+    newcalls = []
+    for locus in reconstructed:
+        reconseq = reconstructed[locus]
+        if "N" not in reconseq:
+            for allele in refseqs[locus]:
+                alleleseq = refseqs[locus][allele]
+                if alleleseq == reconseq:
+                    alleles_called_ref[locus] = allele.split(":")[-1]
+                    newcalls.append(locus)
+    return alleles_called_ref,newcalls
+
+def ref_exact_blast(query_genome, ref_fasta, allele_sizes, tempdir, args):
     """
     runs blast and extracts exact hits to existing alleles
     data structure of parsed blast results:
