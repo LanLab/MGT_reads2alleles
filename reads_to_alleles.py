@@ -595,7 +595,7 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
                                                                   tempdir,args)
 
     # print(no_hits)
-
+    # exacthits = len(alleles_called_ref.keys())
     # print("Exact matches found: {}\n".format(len(alleles_called_ref.keys())))
     print("Processing partial BLAST hits")
 
@@ -614,15 +614,16 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
     # Try to rebuild each locus that has partial hsps matching it
     # returns reconstructed loci (with Ns) where possible
     reconstructed, uncallable = generate_query_allele_seqs(partial_hsps, query_genome, missing_limit,
-                                                           wordsize, tophitlocus, qgenome, hsp_ident_thresh, uncallable)
+                                                           wordsize, tophitlocus, qgenome, hsp_ident_thresh, uncallable,
+                                                           args)
 
     alleles_called_ref,newcalls = check_reconstructed_for_exact_matches(reconstructed,seqs,alleles_called_ref)
 
     for i in newcalls:
         partial_loci.remove(i)  # if locus has exact match to existing remove from list
 
-    exacthits = len(alleles_called_ref.keys())-exacthits
-    print("Reconstructed exact matches found: {}\n".format(exacthits))
+    # exacthits = len(alleles_called_ref.keys())-exacthits
+    # print("Reconstructed exact matches found: {}\n".format(exacthits))
 
     print("Writing outputs\n")
     write_outalleles(outfile, reconstructed, alleles_called_ref, uncallable, locus_list, mgt1st, no_hits, serotype,args)
