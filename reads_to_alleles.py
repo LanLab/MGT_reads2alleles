@@ -555,6 +555,8 @@ def genome_to_alleles(query_genome, strain_name, args, mgt1st, serotype):
         ref_alleles_in = os.path.abspath("./species_specific_files/")
         db = args.serotodb[serotype]
         ref_alleles_in = "{}/{}/{}_ref_alleles.fasta".format(ref_alleles_in, db, db)
+        if os.path.exists(ref_alleles_in+".zip"):
+            sys.exit(f"Please unzip {ref_alleles_in}.zip before continuing")
 
     hsp_ident_thresh = float(args.hspident)  # scriptvariable blast identity to at least one other allele for each locus
     missing_limit = args.locusnlimit  # scriptvariable minimum allowable fraction of locus not lost (i.e. max 20% can be "N")
