@@ -855,7 +855,7 @@ def get_partial_match_query_region(blast_results, partial_matches, qgenome, hsp_
 
         elif len(partials[locus]) > 1:
 
-            olcheck = check_for_multiple_ol_partial_hsps(partials[locus], hsp_ident,locus)
+            olcheck = check_for_multiple_ol_partial_hsps(partials[locus], hsp_ident)
             if locus == testlocus:
                 print(olcheck)
                 for i in partials[locus]:
@@ -1283,9 +1283,9 @@ def check_split_over_contigs(hspls, query_genome, reflen, locus):
 
             start_next = next_query[:overlap]
 
-            if locus == testlocus:
-                print(end_cur)
-                print(start_next)
+            # if locus == testlocus:
+            #     print(end_cur)
+            #     print(start_next)
 
             if end_cur == start_next:
                 add_seq = next_query[overlap:]
