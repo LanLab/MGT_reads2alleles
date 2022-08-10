@@ -53,13 +53,13 @@ install miniconda3 -> https://conda.io/miniconda.html
 Next a Miniconda3 environment will be created and will contain all the required dependencies for this pipeline.
 The "fq_to_allele.yml" has been provided to creating an environment named "fq_to_allele".
 
-	conda env create -f /path_to_MGT_read2alleles/fq_to_allele.yml -n fq_to_allele
+	conda env create -f /path_to_MGT_reads2alleles/fq_to_allele.yml -n fq_to_allele
 
 **6. Users Permission**
 
 Lastly, the user permissions for the shovill_15cov file must be adjusted to allow execution
 
-	chmod 755 /path_to_MGT_read2alleles/shovill_cmd/bin/shovill_15cov
+	chmod 755 /path_to_MGT_reads2alleles/shovill_cmd/bin/shovill_15cov
 
 Run
 ---
